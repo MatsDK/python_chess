@@ -2,29 +2,29 @@ from prop import get
 import pygame
 import json
 
-data = open('Assets/data.json',)
-data = json.load(data)
+board = open('Assets/board.json',)
+board = json.load(board)
 
-data1 = open('Assets/data1.json',)
-data1 = json.load(data1)
+offset = open('Assets/offset.json',)
+offset = json.load(offset)
 
-image = pygame.image.load("Assets/pieces1.png")
+image = pygame.image.load("Assets/pieces.png")
 image = pygame.transform.scale(image, (600, 200))
 
 
 class Piece:
     def __init__(self, i, j, player, spacing) -> None:
         self.SPACING = spacing
-        self.name = data[j][i]
+        self.name = board[j][i]
         self.x = i
         self.y = j
         self.player = player
         self.is_white = bool(player.id)
 
     def draw(self, canvas):
-        x_offset, y_offset = get(data1, self.name), 0
+        x_offset, y_offset = get(offset, self.name), 0
 
-        if self.is_white is not True:
+        if self.is_white != True:
             y_offset = self.SPACING
 
         cropped_region = (x_offset, y_offset, 100, 100)

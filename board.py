@@ -1,8 +1,8 @@
-from pygame.constants import CONTROLLER_BUTTON_GUIDE
 from Piece import Piece
 import pygame
 
-Color_line = (80, 80, 80)
+Color = (80, 80, 80)
+Highlight_color = (0, 140, 240)
 
 
 class Board:
@@ -10,30 +10,39 @@ class Board:
         self.HEIGHT = HEIGHT
         self.SPACING = int(HEIGHT/8)
         self.canvas = canvas
-        self.highlighted = []
-        self.pieces = []
+        self.highlighted = [[0 for i in range(8)] for j in range(8)]
+        self.pieces = [[0 for i in range(8)] for j in range(8)]
+        self.selected = False
 
-    def update(self):
+    def remove_selected(self):
+        self.highlighted = [[0 for i in range(8)] for j in range(8)]
+        self.selected = False
+
+    def draw(self, canvas):
+        self.canvas = canvas
 
         for i in range(8):
             for j in range(8):
 
                 if (i % 2) == 0 and (j % 2) == 1:
-                    pygame.draw.rect(self.canvas, Color_line, pygame.Rect(
+                    pygame.draw.rect(self.canvas, Color, pygame.Rect(
                         i * self.SPACING, j * self.SPACING,  self.SPACING,  self.SPACING))
                 if (i % 2) == 1 and (j % 2) == 0:
-                    pygame.draw.rect(self.canvas, Color_line, pygame.Rect(
+                    pygame.draw.rect(self.canvas, Color, pygame.Rect(
+                        i * self.SPACING, j * self.SPACING, self.SPACING,  self.SPACING))
+
+                if bool(self.highlighted[i][j]):
+                    pygame.draw.rect(self.canvas, Highlight_color, pygame.Rect(
                         i * self.SPACING, j * self.SPACING, self.SPACING,  self.SPACING))
 
                 if isinstance(self.pieces[i][j], Piece):
                     self.pieces[i][j].draw(self.canvas)
 
-        pygame.draw.line(self.canvas, Color_line, (self.HEIGHT, 0),
+        pygame.draw.line(self.canvas, Color, (self.HEIGHT, 0),
                          (self.HEIGHT, self.HEIGHT), 2)
 
     def set_players(self, player1, player2):
-        self.player1 = player1
-        self.player2 = player2
+        self.player1, self.player2 = player1, player2
 
         if player1.id == 1:
             self.active_player = player1
@@ -43,8 +52,6 @@ class Board:
         self.set_pieces()
 
     def set_pieces(self):
-
-        self.pieces = [[0 for i in range(8)] for j in range(8)]
 
         for i in range(8):
             for j in range(8):
@@ -60,8 +67,30 @@ class Board:
                         i, j, self.active_player, self.SPACING)
 
     def clicked(self, x, y):
-        x, y = x//self.SPACING, y // self.SPACING
-        if isinstance(self.pieces[x][y], Piece):
-            print(self.pieces[x][y].name)
-            print(self.active_player == self.pieces[x][y].player)
-            self.highlighted = [(x, y)]
+        x, y = x // self.SPACING, y // self.SPACING
+
+        if self.selected != False and self.pieces[x][y] == self.selected:
+            return self.remove_selected()
+
+        if isinstance(self.pieces[x][y], Piece) and self.pieces[x][y].player == self.active_player:
+            self.highlighted = [[0 for i in range(8)] for j in range(8)]
+            self.highlighted[x][y] = 1
+
+            self.selected = self.pieces[x][y]
+        elif self.selected != False:
+            self.move(self.selected.x, self.selected.y, x, y)
+
+    def move(self, x1, y1, x2, y2):
+        self.selected.x, self.selected.y = x2, y2
+        self.pieces[x2][y2] = self.selected
+
+        self.pieces[x1][y1] = 0
+
+        self.remove_selected()
+        self.next_player()
+
+    def next_player(self):
+        if self.active_player == self.player1:
+            self.active_player = self.player2
+        else:
+            self.active_player = self.player1
