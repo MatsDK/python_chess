@@ -18,9 +18,7 @@ class Board:
         self.highlighted = [[0 for i in range(8)] for j in range(8)]
         self.selected = False
 
-    def draw(self, canvas):
-        self.canvas = canvas
-
+    def draw(self):
         for i in range(8):
             for j in range(8):
 
@@ -69,20 +67,33 @@ class Board:
     def clicked(self, x, y):
         x, y = x // self.SPACING, y // self.SPACING
 
+        # toggle if piece is selected
         if self.selected != False and self.pieces[x][y] == self.selected:
             return self.remove_selected()
 
+        # if clicked on piece of active_player set selected
         if isinstance(self.pieces[x][y], Piece) and self.pieces[x][y].player == self.active_player:
             self.highlighted = [[0 for i in range(8)] for j in range(8)]
             self.highlighted[x][y] = 1
 
             self.selected = self.pieces[x][y]
+            moves = []
+            if self.active_player == self.player2:
+                moves = self.selected.get_moves(self.pieces, self.player1)
+            else:
+                moves = self.selected.get_moves(self.pieces, self.player2)
+
+            for i, j in moves:
+                self.highlighted[i][j] = 1
+
+        # if not clicked on own piece, move the piece
         elif self.selected != False:
             self.move(self.selected.x, self.selected.y, x, y)
 
     def move(self, x1, y1, x2, y2):
         self.selected.x, self.selected.y = x2, y2
         self.pieces[x2][y2] = self.selected
+        self.pieces[x2][y2].is_moved = True
 
         self.pieces[x1][y1] = 0
 

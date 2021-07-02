@@ -23,7 +23,7 @@ exit = False
 while not exit:
     canvas.fill(color)
 
-    Board.draw(canvas)
+    Board.draw()
 
     for event in pygame.event.get():
         if event.type == pygame.MOUSEBUTTONUP:
