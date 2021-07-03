@@ -77,6 +77,7 @@ class Board:
             self.highlighted[x][y] = 1
 
             self.selected = self.pieces[x][y]
+
             moves = []
             if self.active_player == self.player2:
                 moves = self.selected.get_moves(self.pieces, self.player1)
@@ -88,7 +89,8 @@ class Board:
 
         # if not clicked on own piece, move the piece
         elif self.selected != False:
-            self.move(self.selected.x, self.selected.y, x, y)
+            if self.highlighted[x][y]:
+                self.move(self.selected.x, self.selected.y, x, y)
 
     def move(self, x1, y1, x2, y2):
         self.selected.x, self.selected.y = x2, y2

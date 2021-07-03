@@ -37,8 +37,64 @@ class Piece:
 
         if self.name == "P":
             moves = self.get_pawn_moves(pieces, opponent)
-        if self.name == "N":
+        elif self.name == "N":
             moves = self.get_knight_moves(pieces, opponent)
+        elif self.name == "B":
+            moves = self.get_bishop_moves(pieces, opponent)
+        elif self.name == "R":
+            moves = self.get_rook_moves(pieces, opponent)
+        elif self.name == "K":
+            moves = self.get_king_moves(pieces, opponent)
+        elif self.name == "Q":
+            moves = self.get_queen_moves(pieces, opponent)
+
+        return moves
+
+    def get_moves_with_directions(self, directions, pieces, opponent):
+        moves = []
+
+        for x, y in directions:
+            for i in range(7):
+                new_x, new_y = self.x + (i + 1) * x, self.y + (i + 1) * y
+
+                if new_x >= 0 and new_x <= 7 and new_y >= 0 and new_y <= 7:
+                    if isinstance(pieces[new_x][new_y], Piece):
+                        if pieces[new_x][new_y].player == opponent:
+                            moves.append((new_x, new_y))
+
+                        break
+                    else:
+                        moves.append((new_x, new_y))
+
+        return moves
+
+    def get_queen_moves(self, pieces, opponent):
+        moves = []
+        diag_directions = [(1, 1), (-1, 1), (-1, -1), (1, -1)]
+        directions = [(-1, 0), (0, -1), (1, 0), (0, 1)]
+
+        moves = self.get_moves_with_directions(
+            diag_directions, pieces, opponent)
+        moves.extend(self.get_moves_with_directions(
+            directions, pieces, opponent))
+
+        return moves
+
+    def get_king_moves(self, pieces, opponent):
+        moves = []
+        directions = [(-1, -1), (0, -1), (-1, 1),
+                      (1, 1), (0, 1), (-1, 0), (1, -1), (1, 0)]
+
+        for i, j in directions:
+            new_x, new_y = self.x + i, self.y + j
+
+            if new_x >= 0 and new_x <= 7 and new_y >= 0 and new_y <= 7:
+                if isinstance(pieces[new_x][new_y], Piece):
+                    if pieces[new_x][new_y].player == opponent:
+                        moves.append((new_x, new_y))
+
+                else:
+                    moves.append((new_x, new_y))
 
         return moves
 
@@ -62,6 +118,7 @@ class Piece:
                 moves.append((self.x + 1, self.y - 1))
 
         else:
+
             if not isinstance(pieces[self.x][self.y + 1], Piece):
                 moves.append((self.x, self.y + 1))
 
@@ -86,7 +143,8 @@ class Piece:
         for i, j in directions:
             new_x, new_y = self.x + i, self.y + j
 
-            if (new_x >= 0 and new_x <= 7 and new_y >= 0 and new_y <= 7):
+            if new_x >= 0 and new_x <= 7 and new_y >= 0 and new_y <= 7:
+
                 if isinstance(pieces[new_x][new_y], Piece):
                     if pieces[new_x][new_y].player == opponent:
                         moves.append((new_x, new_y))
@@ -94,3 +152,13 @@ class Piece:
                     moves.append((new_x, new_y))
 
         return moves
+
+    def get_bishop_moves(self, pieces, opponent):
+        directions = [(1, 1), (-1, 1), (-1, -1), (1, -1)]
+
+        return self.get_moves_with_directions(directions, pieces, opponent)
+
+    def get_rook_moves(self, pieces, opponent):
+        directions = [(-1, 0), (0, -1), (1, 0), (0, 1)]
+
+        return self.get_moves_with_directions(directions, pieces, opponent)
