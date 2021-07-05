@@ -78,11 +78,8 @@ class Board:
 
             self.selected = self.pieces[x][y]
 
-            moves = []
-            if self.active_player == self.player2:
-                moves = self.selected.get_moves(self.pieces, self.player1)
-            else:
-                moves = self.selected.get_moves(self.pieces, self.player2)
+            moves = self.selected.get_moves(
+                self.pieces, self.get_inactive_player())
 
             for i, j in moves:
                 self.highlighted[i][j] = 1
@@ -93,17 +90,27 @@ class Board:
                 self.move(self.selected.x, self.selected.y, x, y)
 
     def move(self, x1, y1, x2, y2):
+        if (isinstance(self.pieces[x2][y2], Piece)
+                and self.pieces[x2][y2].player != self.active_player):
+            self.get_inactive_player().pieces_left -= 1
+
         self.selected.x, self.selected.y = x2, y2
         self.pieces[x2][y2] = self.selected
         self.pieces[x2][y2].is_moved = True
 
         self.pieces[x1][y1] = 0
 
+        if(self.get_inactive_player().is_check(self.pieces, self.active_player)):
+            print("check")
+
         self.remove_selected()
         self.next_player()
 
     def next_player(self):
+        self.active_player = self.get_inactive_player()
+
+    def get_inactive_player(self):
         if self.active_player == self.player1:
-            self.active_player = self.player2
+            return self.player2
         else:
-            self.active_player = self.player1
+            return self.player1
