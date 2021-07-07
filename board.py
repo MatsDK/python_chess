@@ -100,8 +100,8 @@ class Board:
 
         self.pieces[x1][y1] = 0
 
-        if(self.get_inactive_player().is_check(self.pieces, self.active_player)):
-            print("check")
+        if(self.get_inactive_player().is_check_mate(self.pieces, self.active_player)):
+            print("checkmate")
 
         self.remove_selected()
         self.next_player()
