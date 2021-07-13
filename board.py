@@ -79,7 +79,7 @@ class Board:
             self.selected = self.pieces[x][y]
 
             moves = self.selected.get_moves(
-                self.pieces, self.get_inactive_player())
+                self.pieces, self.get_inactive_player(), True)
 
             for i, j in moves:
                 self.highlighted[i][j] = 1
@@ -100,8 +100,8 @@ class Board:
 
         self.pieces[x1][y1] = 0
 
-        if(self.get_inactive_player().is_check_mate(self.pieces, self.active_player)):
-            print("checkmate")
+        # if(self.get_inactive_player().is_check_mate(self.pieces, self.active_player)):
+        #     print("checkmate")
 
         self.remove_selected()
         self.next_player()

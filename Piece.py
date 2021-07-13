@@ -1,4 +1,5 @@
 from prop import get
+import numpy as np
 import pygame
 import json
 
@@ -32,7 +33,7 @@ class Piece:
         canvas.blit(image, (self.x * self.SPACING,
                     self.y * self.SPACING), cropped_region)
 
-    def get_moves(self, pieces, opponent):
+    def get_moves(self, pieces, opponent, check):
         moves = []
 
         if self.name == "P":
@@ -44,7 +45,7 @@ class Piece:
         elif self.name == "R":
             moves = self.get_rook_moves(pieces, opponent)
         elif self.name == "K":
-            moves = self.get_king_moves(pieces, opponent)
+            moves = self.get_king_moves(pieces, opponent, check)
         elif self.name == "Q":
             moves = self.get_queen_moves(pieces, opponent)
 
@@ -80,7 +81,7 @@ class Piece:
 
         return moves
 
-    def get_king_moves(self, pieces, opponent):
+    def get_king_moves(self, pieces, opponent, check):
         moves = []
         directions = [(-1, -1), (0, -1), (-1, 1),
                       (1, 1), (0, 1), (-1, 0), (1, -1), (1, 0)]
@@ -95,6 +96,11 @@ class Piece:
 
                 else:
                     moves.append((new_x, new_y))
+
+        if not check:
+            return moves
+
+        moves.extend(self.get_castle_moves(pieces, opponent))
 
         return moves
 
@@ -162,3 +168,75 @@ class Piece:
         directions = [(-1, 0), (0, -1), (1, 0), (0, 1)]
 
         return self.get_moves_with_directions(directions, pieces, opponent)
+
+    def get_rook_positions(self, pieces):
+        positions = []
+
+        for i in range(8):
+            for j in range(8):
+                if (isinstance(pieces[i][j], Piece) and pieces[i][j].name == "R"
+                        and pieces[i][j].player == self.player):
+                    positions.append((i, j))
+
+        return positions
+
+    def get_castle_moves(self, pieces, opponent):
+        moves = []
+
+        if not self.is_moved:
+            rook_positions = self.get_rook_positions(pieces)
+            king_pos = self.x, self.y
+
+            if self.player.is_check(pieces, opponent, king_pos):
+                return moves
+
+            for i, j in rook_positions:
+                isValid = True
+
+                if pieces[i][j].is_moved:
+                    continue
+
+                idx, max = sorted([i, self.x])
+                curr_idx = idx + 1
+
+                while curr_idx < max:
+                    if isinstance(pieces[curr_idx][j], Piece):
+                        isValid = False
+                        break
+
+                    curr_idx += 1
+
+                if isValid:
+                    check_pieces = np.copy(pieces)
+
+                    for new_i in range(2):
+                        m = self.x + new_i + 1
+                        if i - self.x == -4:
+                            m = self.x - new_i - 1
+
+                        check_pieces[m][j] = check_pieces[king_pos[0]][self.y]
+                        check_pieces[m][self.y].x, check_pieces[m][self.y].y = m, self.y
+
+                        check_pieces[king_pos[0]][self.y] = 0
+
+                        checked = self.player.is_check(
+                            check_pieces, opponent, (m, j))
+
+                        check_pieces[king_pos[0]
+                                     ][self.y] = check_pieces[m][self.y]
+                        check_pieces[king_pos[0]][self.y].x, check_pieces[king_pos[0]
+                                                                          ][self.y].y = king_pos[0], self.y
+
+                        check_pieces[m][j] = 0
+
+                        if checked:
+                            isValid = False
+                            break
+
+                if isValid:
+                    if i - self.x == -4:
+                        moves.append((self.x - 2, j))
+                    else:
+                        moves.append((self.x + 2, j))
+
+        return moves
