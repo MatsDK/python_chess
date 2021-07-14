@@ -100,7 +100,9 @@ class Piece:
         if not check:
             return moves
 
-        moves.extend(self.get_castle_moves(pieces, opponent))
+        castle_moves = self.get_castle_moves(pieces, opponent)
+        self.player.castle_moves = castle_moves
+        moves.extend(castle_moves)
 
         return moves
 

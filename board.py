@@ -1,3 +1,4 @@
+from numpy import copy
 from Piece import Piece
 import pygame
 
@@ -78,6 +79,7 @@ class Board:
 
             self.selected = self.pieces[x][y]
 
+            self.active_player.castle_moves = []
             moves = self.selected.get_moves(
                 self.pieces, self.get_inactive_player(), True)
 
@@ -94,14 +96,32 @@ class Board:
                 and self.pieces[x2][y2].player != self.active_player):
             self.get_inactive_player().pieces_left -= 1
 
+        if (x2, y2) in self.active_player.castle_moves:
+            if x2 == 2:
+                new_rook_pos = (3, y2)
+
+                self.pieces[0][y2].x, self.pieces[0][y2].y = new_rook_pos
+                self.pieces[new_rook_pos[0]
+                            ][new_rook_pos[1]] = (self.pieces[0][y2])
+
+                self.pieces[0][y2] = 0
+            elif x2 == 6:
+                new_rook_pos = (5, y2)
+
+                self.pieces[7][y2].x, self.pieces[7][y2].y = new_rook_pos
+                self.pieces[new_rook_pos[0]
+                            ][new_rook_pos[1]] = (self.pieces[7][y2])
+
+                self.pieces[7][y2] = 0
+
         self.selected.x, self.selected.y = x2, y2
         self.pieces[x2][y2] = self.selected
         self.pieces[x2][y2].is_moved = True
 
         self.pieces[x1][y1] = 0
 
-        # if(self.get_inactive_player().is_check_mate(self.pieces, self.active_player)):
-        #     print("checkmate")
+        if(self.get_inactive_player().is_check_mate(self.pieces, self.active_player)):
+            print("checkmate")
 
         self.remove_selected()
         self.next_player()

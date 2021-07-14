@@ -7,6 +7,7 @@ class Player:
     def __init__(self, id) -> None:
         self.id = id
         self.pieces_left = 16
+        self.castle_moves = []
 
     def get_king_pos(self, pieces):
         king_pos = False
@@ -49,18 +50,21 @@ class Player:
                     for new_i, new_j in moves:
                         check_pieces[new_i][new_j] = check_pieces[i][j]
                         check_pieces[new_i][new_j].x, check_pieces[new_i][new_j].y = new_i, new_j
-
                         check_pieces[i][j] = 0
 
+                        new_king_pos = king_pos
+                        if check_pieces[new_i][new_j].name == "K":
+                            new_king_pos = (new_i, new_j)
+
                         checked = self.is_check(
-                            check_pieces, opponent, king_pos)
+                            check_pieces, opponent, new_king_pos)
 
                         check_pieces[i][j] = check_pieces[new_i][new_j]
-                        check_pieces[i][j].x, check_pieces[i][j] = i, j
-
+                        check_pieces[i][j].x, check_pieces[i][j].y = i, j
                         check_pieces[new_i][new_j] = 0
 
                         if not checked:
+                            print(i, j, new_i, new_j)
                             return False
 
         return True
